@@ -31,7 +31,7 @@ class HomeScreen extends ConsumerWidget {
                   margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   child: ListTile(
                     title: Text(person.name, style: Theme.of(context).textTheme.titleMedium),
-                    subtitle: Text('Balance: ₹${balance.toStringAsFixed(2)}', style: TextStyle(color: balance >= 0 ? Colors.green : Colors.red)),
+                    subtitle: Text('Balance: ৳${balance.toStringAsFixed(2)}', style: TextStyle(color: balance >= 0 ? Colors.green : Colors.red)),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -90,125 +90,101 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-void _showTransactionDialog(BuildContext context, WidgetRef ref, String personId) {
-  final amountController = TextEditingController();
-  final descriptionController = TextEditingController();
-  final formKey = GlobalKey<FormState>();
-  bool isPayment = true; // true = Received, false = Paid
+  void _showTransactionDialog(BuildContext context, WidgetRef ref, String personId) {
+    final amountController = TextEditingController();
+    final descriptionController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+    bool isPayment = true; // true = Received, false = Paid
 
-  showDialog(
-    context: context,
-    builder: (context) {
-      return StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            title: const Text('Add Transaction'),
-            content: SingleChildScrollView(
-              child: Form(
-                key: formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Amount Input
-                    TextFormField(
-                      controller: amountController,
-                      keyboardType: TextInputType.numberWithOptions(decimal: true),
-                      decoration: const InputDecoration(
-                        labelText: 'Amount',
-                        prefixText: '₹',
-                        border: OutlineInputBorder(),
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Add Transaction'),
+              content: SingleChildScrollView(
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Amount Input
+                      TextFormField(
+                        controller: amountController,
+                        keyboardType: TextInputType.numberWithOptions(decimal: true),
+                        decoration: const InputDecoration(labelText: 'Amount', prefixText: '৳', border: OutlineInputBorder()),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter amount';
+                          }
+                          final amount = double.tryParse(value);
+                          if (amount == null || amount <= 0) {
+                            return 'Enter valid positive amount';
+                          }
+                          return null;
+                        },
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter amount';
-                        }
-                        final amount = double.tryParse(value);
-                        if (amount == null || amount <= 0) {
-                          return 'Enter valid positive amount';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    
-                    // Description Input (Optional)
-                    TextFormField(
-                      controller: descriptionController,
-                      decoration: const InputDecoration(
-                        labelText: 'Description (Optional)',
-                        border: OutlineInputBorder(),
+                      const SizedBox(height: 16),
+
+                      // Description Input (Optional)
+                      TextFormField(
+                        controller: descriptionController,
+                        decoration: const InputDecoration(labelText: 'Description (Optional)', border: OutlineInputBorder()),
+                        maxLines: 2,
                       ),
-                      maxLines: 2,
-                    ),
-                    const SizedBox(height: 16),
-                    
-                    // Transaction Type Selector
-                    const Text('Transaction Type:', style: TextStyle(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    SegmentedButton<bool>(
-                      segments: const [
-                        ButtonSegment(
-                          value: true,
-                          label: Text('Received'),
-                          icon: Icon(Icons.arrow_downward),
-                        ),
-                        ButtonSegment(
-                          value: false,
-                          label: Text('Paid'),
-                          icon: Icon(Icons.arrow_upward),
-                        ),
-                      ],
-                      selected: {isPayment},
-                      onSelectionChanged: (Set<bool> newSelection) {
-                        setState(() => isPayment = newSelection.first);
-                      },
-                    ),
-                  ],
+                      const SizedBox(height: 16),
+
+                      // Transaction Type Selector
+                      const Text('Transaction Type:', style: TextStyle(fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      SegmentedButton<bool>(
+                        segments: const [
+                          ButtonSegment(value: true, label: Text('Received'), icon: Icon(Icons.arrow_downward)),
+                          ButtonSegment(value: false, label: Text('Paid'), icon: Icon(Icons.arrow_upward)),
+                        ],
+                        selected: {isPayment},
+                        onSelectionChanged: (Set<bool> newSelection) {
+                          setState(() => isPayment = newSelection.first);
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  if (formKey.currentState!.validate()) {
-                    // Add the transaction
-                    ref.read(transactionProvider.notifier).addTransaction(
-                      personId,
-                      double.parse(amountController.text),
-                      isPayment,
-                    );
-                    
-                    // Show success message
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          '${isPayment ? 'Received' : 'Paid'} ₹${amountController.text} successfully',
-                          style: const TextStyle(color: Colors.white),
+              actions: [
+                TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+                ElevatedButton(
+                  onPressed: () {
+                    if (formKey.currentState!.validate()) {
+                      // Add the transaction
+                      ref.read(transactionProvider.notifier).addTransaction(personId, double.parse(amountController.text), isPayment);
+
+                      // Show success message
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            '${isPayment ? 'Received' : 'Paid'} ৳${amountController.text} successfully',
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                          backgroundColor: isPayment ? Colors.green : Colors.red,
                         ),
-                        backgroundColor: isPayment ? Colors.green : Colors.red,
-                      ),
-                    );
-                    
-                    // Close the dialog
-                    Navigator.pop(context);
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: isPayment ? Colors.green : Colors.red,
+                      );
+
+                      // Close the dialog
+                      Navigator.pop(context);
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(backgroundColor: isPayment ? Colors.green : Colors.red),
+                  child: Text(isPayment ? 'Add Received' : 'Add Paid'),
                 ),
-                child: Text(isPayment ? 'Add Received' : 'Add Paid'),
-              ),
-            ],
-          );
-        },
-      );
-    },
-  );
-}
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
 
   void _showPersonOptions(BuildContext context, WidgetRef ref, Person person) {
     showModalBottomSheet(
