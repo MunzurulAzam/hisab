@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hisab/core/config/routes/app_routes.dart';
+import 'package:hisab/core/constants/colors/app_colors.dart';
 import 'package:hisab/core/db/hive/person_model/person.dart';
 import 'package:hisab/logic/providers/person_provider/provider/person_provider.dart';
 import 'package:hisab/logic/providers/transaction_provider/provider/transaction_provider.dart';
@@ -92,7 +93,7 @@ class HomeScreen extends ConsumerWidget {
 
   void _showTransactionDialog(BuildContext context, WidgetRef ref, String personId) {
     final amountController = TextEditingController();
-    final descriptionController = TextEditingController();
+    // final descriptionController = TextEditingController();
     final formKey = GlobalKey<FormState>();
     bool isPayment = true; // true = Received, false = Paid
 
@@ -140,7 +141,7 @@ class HomeScreen extends ConsumerWidget {
                       const SizedBox(height: 8),
                       SegmentedButton<bool>(
                         segments: const [
-                          ButtonSegment(value: true, label: Text('Received'), icon: Icon(Icons.arrow_downward)),
+                          ButtonSegment(value: true, label: Text('Give'), icon: Icon(Icons.arrow_downward)),
                           ButtonSegment(value: false, label: Text('Paid'), icon: Icon(Icons.arrow_upward)),
                         ],
                         selected: {isPayment},
@@ -164,7 +165,7 @@ class HomeScreen extends ConsumerWidget {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
-                            '${isPayment ? 'Received' : 'Paid'} ৳${amountController.text} successfully',
+                            '${isPayment ? 'Given Money' : 'Paid'} ৳${amountController.text} successfully',
                             style: const TextStyle(color: Colors.white),
                           ),
                           backgroundColor: isPayment ? Colors.green : Colors.red,
@@ -176,7 +177,7 @@ class HomeScreen extends ConsumerWidget {
                     }
                   },
                   style: ElevatedButton.styleFrom(backgroundColor: isPayment ? Colors.green : Colors.red),
-                  child: Text(isPayment ? 'Add Received' : 'Add Paid'),
+                  child: Text(isPayment ? 'Add' : 'Add Paid', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.kWhiteColor),),
                 ),
               ],
             );
