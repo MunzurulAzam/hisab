@@ -125,14 +125,14 @@ class HomeScreen extends ConsumerWidget {
                           return null;
                         },
                       ),
-                      const SizedBox(height: 16),
+                      // const SizedBox(height: 16),
 
-                      // Description Input (Optional)
-                      TextFormField(
-                        controller: descriptionController,
-                        decoration: const InputDecoration(labelText: 'Description (Optional)', border: OutlineInputBorder()),
-                        maxLines: 2,
-                      ),
+                      // // Description Input (Optional)
+                      // TextFormField(
+                      //   controller: descriptionController,
+                      //   decoration: const InputDecoration(labelText: 'Description (Optional)', border: OutlineInputBorder()),
+                      //   maxLines: 2,
+                      // ),
                       const SizedBox(height: 16),
 
                       // Transaction Type Selector
