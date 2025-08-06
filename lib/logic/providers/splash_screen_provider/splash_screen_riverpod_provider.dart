@@ -22,7 +22,7 @@ class SplashNotifier extends StateNotifier<void> {
   }
 
   void goNext(BuildContext context) {
-    GoRouter.of(context).go(RouteName.home);
+    GoRouter.of(context).go(RouteName.loginScreen);
   }
 }
 

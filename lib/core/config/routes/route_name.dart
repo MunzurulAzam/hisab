@@ -6,4 +6,6 @@ abstract class RouteName {
   static const home = '/home';
   static const test = '/test';
   static const historyScreen = '/historyScreen';
+  static const loginScreen = '/loginScreen';
+  static const registerScreen = '/registerScreen';
 }
