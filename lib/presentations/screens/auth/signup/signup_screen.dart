@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:hisab/core/config/routes/app_routes.dart';
+import 'package:hisab/core/utils/size_config.dart';
 import 'package:hisab/logic/providers/auth/provider/auth_provider.dart';
+import 'package:hisab/presentations/widgets/on_process_button_widget.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -25,48 +29,113 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
+    final notifier = ref.read(authProvider.notifier);
+    final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Register')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
+      backgroundColor: Colors.grey[100],
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: Container(
+            padding: const EdgeInsets.all(24.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: const [BoxShadow(blurRadius: 20, color: Colors.black12, offset: Offset(0, 5))],
             ),
-            TextField(
-              controller: passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(labelText: 'Password'),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Create Account', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                getVerticalSpace(8),
+                Text('Register to get started', style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey[600])),
+                getVerticalSpace(32),
+
+                /// Email Field
+                TextField(
+                  controller: emailController,
+                  keyboardType: TextInputType.phone,
+                  decoration: InputDecoration(
+                    labelText: 'Phone Number',
+                    prefixIcon: const Icon(Icons.phone),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+                getVerticalSpace(16),
+
+                /// Password Field
+                TextField(
+                  controller: passwordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    prefixIcon: const Icon(Icons.lock),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+                getVerticalSpace(16),
+
+                /// Confirm Password Field
+                TextField(
+                  controller: confirmController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'Confirm Password',
+                    prefixIcon: const Icon(Icons.lock_outline),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+                getVerticalSpace(24),
+
+                /// Register Button
+                SizedBox(
+                  width: double.infinity,
+                  height: getScreenHeight(48),
+                  child: OnProcessButtonWidget(
+                    onTap: authState.isLoading
+                        ? null
+                        : () async {
+                            if (passwordController.text != confirmController.text) {
+                              ScaffoldMessenger.of(
+                                context,
+                              ).showSnackBar(const SnackBar(content: Text("Passwords don't match"), backgroundColor: Colors.redAccent));
+                              return null;
+                            } else {
+                              final success = await ref.read(authProvider.notifier).register(emailController.text.trim(), passwordController.text);
+                              return success;
+                            }
+                          },
+                    onDone: (isSuccess) {
+                      if (isSuccess == true) {
+                        notifier.clearState();
+                        GoRouter.of(context).pushNamed(RouteName.loginScreen);
+                      }
+                    },
+                    // style: ElevatedButton.styleFrom(
+                    //   backgroundColor: Colors.deepPurple,
+                    //   shape: RoundedRectangleBorder(
+                    //     borderRadius: BorderRadius.circular(12),
+                    //   ),
+                    // ),
+                    child: authState.isLoading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : Text(
+                            'Register',
+                            style: TextStyle(fontSize: getFontSize(16), fontWeight: FontWeight.bold),
+                          ),
+                  ),
+                ),
+
+                /// Error message from backend
+                if (authState.error != null)
+                  Padding(
+                    padding: EdgeInsets.only(top: getScreenHeight(12.0)),
+                    child: Text(authState.error!, style: const TextStyle(color: Colors.red)),
+                  ),
+              ],
             ),
-            TextField(
-              controller: confirmController,
-              obscureText: true,
-              decoration: const InputDecoration(labelText: 'Confirm Password'),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: authState.isLoading == true ? null : () {
-                if (passwordController.text != confirmController.text) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Passwords don't match")),
-                  );
-                  return;
-                }
-                ref.read(authProvider.notifier).register(
-                  emailController.text.trim(),
-                  passwordController.text,
-                );
-              },
-              child: const Text('Register'),
-            ),
-            if (authState.error != null) Text(
-              authState.error!,
-              style: const TextStyle(color: Colors.red),
-            ),
-          ],
+          ),
         ),
       ),
     );

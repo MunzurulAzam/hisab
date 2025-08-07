@@ -3,9 +3,9 @@ import 'package:hisab/core/db/hive/user_model/user_model.dart';
 class AuthState {
   final User? user;
   final bool isLoading;
-  final String? error;
+   String? error;
 
-  const AuthState({
+   AuthState({
     this.user,
     this.isLoading = false,
     this.error,
